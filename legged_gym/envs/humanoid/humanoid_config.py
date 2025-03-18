@@ -85,6 +85,23 @@ class HumanoidRobotCfg(LeggedRobotCfg):
         }
 
     class control(LeggedRobotCfg.control):
+        # # PD Drive parameters:
+        # stiffness = {
+        #     "hip_r": 140.0,
+        #     "hip_p": 130.0,
+        #     "hip_y": 80.0,
+        #     "knee": 140.0,
+        #     "ankle": 60,
+        #     "shoulder_p": 100.0,
+        # }
+        # damping = {
+        #     "hip_r": 2.8,
+        #     "hip_p": 2.6,
+        #     "hip_y": 1.6,
+        #     "knee": 2.8,
+        #     "ankle": 1.2,
+        #     "shoulder_p": 2.0,
+        # }
         # PD Drive parameters:
         stiffness = {
             "hip_r": 120.0,
@@ -94,7 +111,6 @@ class HumanoidRobotCfg(LeggedRobotCfg):
             "ankle": 30,
             "shoulder_p": 100.0,
         }
-        # Unitree 2.5 4.0 2.0
         damping = {
             "hip_r": 1.2,
             "hip_p": 1.2,
@@ -184,9 +200,9 @@ class HumanoidRobotCfg(LeggedRobotCfg):
         randomize_base_mass = True
         added_mass_range = [-5.0, 5.0]
         push_robots = True
-        push_interval_s = 4  # 4
-        max_push_vel_xy = 0.2  # 0.2
-        max_push_ang_vel = 0.4  # 0.4
+        push_interval_s = 2  # 4
+        max_push_vel_xy = 0.8  # 0.2
+        max_push_ang_vel = 1.0  # 0.4
         # dynamic randomization
         action_delay = 0.5
         action_noise = 0.02
@@ -212,8 +228,8 @@ class HumanoidRobotCfg(LeggedRobotCfg):
         # put some settings here for LLM parameter tuning
         # target_joint_pos_scale = 0.17    # rad
         target_joint_pos_scale = 0.32  # 0.32    # rad
-        target_feet_height = 0.075  # 0.06        # m
-        cycle_time = 0.64  # sec
+        target_feet_height = 0.09  # 0.075  # 0.06        # m
+        cycle_time = 0.80  # 0.64  # 0.64  # sec
         # if true negative total rewards are clipped at zero (avoids early termination problems)
         only_positive_rewards = True  # True
         # tracking reward = exp(error*sigma)

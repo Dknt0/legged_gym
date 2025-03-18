@@ -220,8 +220,8 @@ class HumanoidRobot(HumanoidRobotBase):
                 diff,  # 12 + 2
                 self.base_lin_vel * self.obs_scales.lin_vel,  # 3
                 self.base_ang_vel * self.obs_scales.ang_vel,  # 3
-                self.base_euler_xyz * self.obs_scales.quat,  # 3
-                # self.projected_gravity * self.obs_scales.quat,
+                # self.base_euler_xyz * self.obs_scales.quat,  # 3
+                self.projected_gravity * self.obs_scales.quat,
                 self.rand_push_force[:, :2],  # 2
                 self.rand_push_torque,  # 3
                 self.env_frictions,  # 1
@@ -234,15 +234,16 @@ class HumanoidRobot(HumanoidRobotBase):
 
         # print(self.projected_gravity * self.obs_scales.quat)
 
+        # 47d
         obs_buf = torch.cat(
             (
                 self.command_input,  # 5 = 2D(sin cos) + 3D(vel_x, vel_y, aug_vel_yaw)
-                q,  # 12 + 2
-                dq,  # 12 + 2
-                self.actions,  # 12 + 2
+                q,  # 12
+                dq,  # 12
+                self.actions,  # 12
                 self.base_ang_vel * self.obs_scales.ang_vel,  # 3
-                self.base_euler_xyz * self.obs_scales.quat,  # 3
-                # self.projected_gravity,
+                # self.base_euler_xyz * self.obs_scales.quat,  # 3
+                self.projected_gravity,
             ),
             dim=-1,
         )
@@ -401,8 +402,8 @@ class HumanoidRobot(HumanoidRobotBase):
         on penalizing deviation in yaw and roll directions. Excludes yaw and roll from the main penalty.
         """
         joint_diff = self.dof_pos - self.default_joint_pd_target
-        left_yaw_roll = joint_diff[:, :2]
-        right_yaw_roll = joint_diff[:, 6:8]
+        left_yaw_roll = joint_diff[:, 1:3]
+        right_yaw_roll = joint_diff[:, 7:9]
         yaw_roll = torch.norm(left_yaw_roll, dim=1) + torch.norm(right_yaw_roll, dim=1)
         yaw_roll = torch.clamp(yaw_roll - 0.1, 0, 50)
         return torch.exp(-yaw_roll * 100) - 0.01 * torch.norm(joint_diff, dim=1)
