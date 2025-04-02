@@ -11,6 +11,7 @@ import torch
 
 from legged_gym import LEGGED_GYM_ROOT_DIR
 from legged_gym.envs.base.base_task import BaseTask
+from legged_gym.envs.humanoid.humanoid_config import HumanoidRobotCfg
 from legged_gym.utils.math import quat_apply_yaw, wrap_to_pi, torch_rand_sqrt_float
 from legged_gym.utils.helpers import class_to_dict
 from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg
@@ -29,7 +30,7 @@ def get_euler_xyz_tensor(quat):
 
 class HumanoidRobotBase(BaseTask):
     def __init__(
-        self, cfg: LeggedRobotCfg, sim_params, physics_engine, sim_device, headless
+        self, cfg: HumanoidRobotCfg, sim_params, physics_engine, sim_device, headless
     ):
         """Parses the provided config file,
             calls create_sim() (which creates, simulation, terrain and environments),
@@ -107,6 +108,9 @@ class HumanoidRobotBase(BaseTask):
         )
 
     def debug_log(self, sub_step: int = 0):
+        """
+        Debug log by Bro. D
+        """
 
         if not hasattr(self, "csv_writer"):
             import csv
@@ -125,6 +129,7 @@ class HumanoidRobotBase(BaseTask):
                 + self.cfg.debug_log.ang_vel_keywords
                 + self.cfg.debug_log.proj_grav_keywords
                 + self.cfg.debug_log.clock_keywords
+                + self.cfg.debug_log.ref_trajectory
             )
             self.save_count = 0
 
@@ -140,7 +145,10 @@ class HumanoidRobotBase(BaseTask):
         sin_pos = torch.sin(2 * torch.pi * phase).unsqueeze(1)
         cos_pos = torch.cos(2 * torch.pi * phase).unsqueeze(1)
 
-        cur_clock = torch.cat([sin_pos, cos_pos], dim=-1).detach().cpu().tolist()
+        cur_clock = torch.cat([sin_pos, cos_pos], dim=-1)[0, :].detach().cpu().tolist()
+        # print(cur_clock)
+        # print(self.ref_dof_pos[0, :].detach().cpu().tolist())
+        ref_traj = self.ref_dof_pos[0, :].detach().cpu().tolist()
 
         row = list(cur_q)
         row += list(cur_dq)
@@ -151,6 +159,7 @@ class HumanoidRobotBase(BaseTask):
         row += list(cur_ang_vel)
         row += list(cur_proj_grav)
         row += list(cur_clock)
+        row += list(ref_traj)
 
         self.csv_writer.writerow(row)
         self.save_count += 1
@@ -733,6 +742,15 @@ class HumanoidRobotBase(BaseTask):
                 self.p_gains[:, i] = 0.0
                 self.d_gains[:, i] = 0.0
                 print(f"PD gain of joint {name} were not defined, setting them to zero")
+
+        if self.cfg.control.random_pd:
+            self.p_gains = self.p_gains * (
+                torch.rand_like(self.p_gains) * self.cfg.control.random_p_factor + 1
+            )
+            self.d_gains = self.d_gains * (
+                torch.rand_like(self.d_gains) * self.cfg.control.random_d_factor + 1
+            )
+            print("Randomize PD parameters.")
 
         self.rand_push_force = torch.zeros(
             (self.num_envs, 3), dtype=torch.float32, device=self.device

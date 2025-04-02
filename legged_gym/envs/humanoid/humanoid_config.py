@@ -119,6 +119,10 @@ class HumanoidRobotCfg(LeggedRobotCfg):
             "ankle": 1.0,
             "shoulder_p": 2.0,
         }
+        random_pd = False
+        random_p_factor = 0.2
+        random_d_factor = 0.2
+
         # stiffness = {
         #     "hip_r": 150.0,
         #     "hip_p": 250.0,
@@ -200,9 +204,12 @@ class HumanoidRobotCfg(LeggedRobotCfg):
         randomize_base_mass = True
         added_mass_range = [-5.0, 5.0]
         push_robots = True
-        push_interval_s = 2  # 4
-        max_push_vel_xy = 0.8  # 0.2
-        max_push_ang_vel = 1.0  # 0.4
+        push_interval_s = 4  # 2 # 4
+        max_push_vel_xy = 0.2  # 1.0 # 0.2
+        max_push_ang_vel = 0.4  # 1.5 # 0.4
+        # push_interval_s = 2  # 2 # 4
+        # max_push_vel_xy = 1.0  # 0.2
+        # max_push_ang_vel = 1.5  # 0.4
         # dynamic randomization
         action_delay = 0.5
         action_noise = 0.02
@@ -229,7 +236,7 @@ class HumanoidRobotCfg(LeggedRobotCfg):
         # target_joint_pos_scale = 0.17    # rad
         target_joint_pos_scale = 0.32  # 0.32    # rad
         target_feet_height = 0.09  # 0.075  # 0.06        # m
-        cycle_time = 0.80  # 0.64  # 0.64  # sec
+        cycle_time = 0.80  # 0.80  # 0.64  # sec
         # if true negative total rewards are clipped at zero (avoids early termination problems)
         only_positive_rewards = True  # True
         # tracking reward = exp(error*sigma)
@@ -238,8 +245,8 @@ class HumanoidRobotCfg(LeggedRobotCfg):
 
         class scales:
             # reference motion tracking
-            joint_pos = 3.6  # 8.6  # 1.6
-            feet_clearance = 2.0  # 1.
+            joint_pos = 3.6  # 3.6 # 5.6
+            feet_clearance = 0.1  # 0.1 # 2.
             feet_contact_number = 1.2
             # gait
             feet_air_time = 2.0  # 1.0
@@ -249,21 +256,23 @@ class HumanoidRobotCfg(LeggedRobotCfg):
             # contact
             feet_contact_forces = -0.01  # -0.01
             # vel tracking
-            tracking_lin_vel = 3.6  # 2.4 # 1.2
+            tracking_lin_vel = 3.6  # 1.2
             tracking_ang_vel = 1.1
             vel_mismatch_exp = 1.0  # 0.5  # lin_z; ang x,y
             low_speed = 0.2
             track_vel_hard = 0.5
             # base pos
             default_joint_pos = 0.5
-            orientation = 1.0  # 1.
+            orientation = 2.0  # 2.0  # 1.
             base_height = 0.3  # 0.2
             base_acc = 0.2
             # energy
-            action_smoothness = -0.002
+            action_smoothness = -1.0  # -4.0 # -1.0 # -0.2 # -0.002
             torques = -1e-5
-            dof_vel = -5e-4
-            dof_acc = -1e-7
+            dof_vel = -1e-3  # -1e-3  # -5e-4
+            dof_acc = -5e-6  # -5e-6 # -1e-6  # -1e-7
+
+            action_rate = -1.0  # -8.0 # 1.0 # -0.2 # -0.0
             collision = -1.0
 
     class normalization:
@@ -353,6 +362,21 @@ class HumanoidRobotCfg(LeggedRobotCfg):
             "proj_grav_GT_no_noise_z",
         ]
         clock_keywords = ["input_clock_0", "input_clock_1"]
+
+        ref_trajectory = [
+            "ref_left_hip_pitch",
+            "ref_left_hip_roll",
+            "ref_left_hip_yaw",
+            "ref_left_knee",
+            "ref_left_ankle_pitch",
+            "ref_left_ankle_roll",
+            "ref_right_hip_pitch",
+            "ref_right_hip_roll",
+            "ref_right_hip_yaw",
+            "ref_right_knee",
+            "ref_right_ankle_pitch",
+            "ref_right_ankle_roll",
+        ]
 
         max_count = 1000
 

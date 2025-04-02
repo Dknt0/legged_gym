@@ -99,19 +99,34 @@ class HumanoidRobot(HumanoidRobotBase):
         sin_pos = torch.sin(2 * torch.pi * phase)
         sin_pos_l = sin_pos.clone()
         sin_pos_r = sin_pos.clone()
+        ## Smooth trajectory
+        sin_pos_smooth = (torch.sin(4 * torch.pi * (phase - 0.125)) + 1) / 2
+        sin_pos_smooth_l = sin_pos_smooth.clone()
+        sin_pos_smooth_r = sin_pos_smooth.clone()
+
         self.ref_dof_pos = torch.zeros_like(self.dof_pos)
         scale_1 = self.cfg.rewards.target_joint_pos_scale
         scale_2 = 2 * scale_1
-        # left foot stance phase set to default joint pos
-        sin_pos_l[sin_pos_l > 0] = 0
-        self.ref_dof_pos[:, 0] = -sin_pos_l * scale_1
-        self.ref_dof_pos[:, 3] = sin_pos_l * scale_2
-        self.ref_dof_pos[:, 4] = sin_pos_l * scale_1
-        # right foot stance phase set to default joint pos
-        sin_pos_r[sin_pos_r < 0] = 0
-        self.ref_dof_pos[:, 6] = sin_pos_r * scale_1
-        self.ref_dof_pos[:, 9] = -sin_pos_r * scale_2
-        self.ref_dof_pos[:, 10] = -sin_pos_r * scale_1
+        # # left foot stance phase set to default joint pos
+        # sin_pos_l[sin_pos_l > 0] = 0
+        # self.ref_dof_pos[:, 0] = -sin_pos_l * scale_1
+        # self.ref_dof_pos[:, 3] = sin_pos_l * scale_2
+        # self.ref_dof_pos[:, 4] = sin_pos_l * scale_1
+        # # right foot stance phase set to default joint pos
+        # sin_pos_r[sin_pos_r < 0] = 0
+        # self.ref_dof_pos[:, 6] = sin_pos_r * scale_1
+        # self.ref_dof_pos[:, 9] = -sin_pos_r * scale_2
+        # self.ref_dof_pos[:, 10] = -sin_pos_r * scale_1
+        # Smooth trajectory
+        sin_pos_smooth_l[sin_pos_l > 0] = 0
+        self.ref_dof_pos[:, 0] = sin_pos_smooth_l * scale_1
+        self.ref_dof_pos[:, 3] = -sin_pos_smooth_l * scale_2
+        self.ref_dof_pos[:, 4] = -sin_pos_smooth_l * scale_1
+        sin_pos_smooth_r[sin_pos_r < 0] = 0
+        self.ref_dof_pos[:, 6] = sin_pos_smooth_r * scale_1
+        self.ref_dof_pos[:, 9] = -sin_pos_smooth_r * scale_2
+        self.ref_dof_pos[:, 10] = -sin_pos_smooth_r * scale_1
+
         # Double support phase
         self.ref_dof_pos[torch.abs(sin_pos) < 0.1] = 0
 
@@ -295,7 +310,7 @@ class HumanoidRobot(HumanoidRobotBase):
         Calculates the reward based on the difference between the current joint positions and the target joint positions.
         """
         joint_pos = self.dof_pos.clone()
-        pos_target = self.ref_dof_pos.clone() + self.default_dof_pos
+        pos_target = self.ref_dof_pos.clone() + self.default_dof_pos.clone()
         diff = joint_pos - pos_target
         # This a way to produce both positive and negative rewards
         r = torch.exp(-2 * torch.norm(diff, dim=1)) - 0.2 * torch.norm(
@@ -498,10 +513,17 @@ class HumanoidRobot(HumanoidRobotBase):
         # Compute swing mask
         swing_mask = 1 - self._get_gait_phase()
 
+        ## Peak clearence
+        phase = self._get_phase()
+        sin_pos = torch.sin(2 * torch.pi * phase)
+        temp_mask = torch.zeros_like(self.feet_height)
+        temp_mask[:] = sin_pos.unsqueeze(1)
+
         # feet height should be closed to target feet height at the peak
         rew_pos = (
             torch.abs(self.feet_height - self.cfg.rewards.target_feet_height) < 0.01
-        )
+        ) * (torch.abs(temp_mask) > 0.9)
+
         rew_pos = torch.sum(rew_pos * swing_mask, dim=1)
         self.feet_height *= ~contact
         return rew_pos
@@ -591,3 +613,7 @@ class HumanoidRobot(HumanoidRobotBase):
         )
         term_3 = 0.05 * torch.sum(torch.abs(self.actions), dim=1)
         return term_1 + term_2 + term_3
+
+    def _reward_action_rate(self):
+        # Penalize changes in actions
+        return torch.sum(torch.square(self.last_actions - self.actions), dim=1)
