@@ -404,6 +404,48 @@ class HumanoidRobotBase(BaseTask):
             rng = self.cfg.domain_rand.added_mass_range
             props[0].mass += np.random.uniform(rng[0], rng[1])
         self.body_mass[env_id] = props[0].mass
+
+        # rand fix body com
+        if self.cfg.domain_rand.randomize_com:
+            self.com_displacements = torch.zeros(
+                self.num_envs,
+                3,
+                dtype=torch.float,
+                device=self.device,
+                requires_grad=False,
+            )
+            env_ids = torch.arange(self.num_envs, device=self.device)
+            comx_displacement, comy_displacement, comz_displacement = (
+                self.cfg.domain_rand.com_displacement_range
+            )
+            self.com_displacements[env_ids, :] = torch.cat(
+                (
+                    torch_rand_float(
+                        comx_displacement[0],
+                        comx_displacement[1],
+                        (len(env_ids), 1),
+                        device=self.device,
+                    ),
+                    torch_rand_float(
+                        comy_displacement[0],
+                        comy_displacement[1],
+                        (len(env_ids), 1),
+                        device=self.device,
+                    ),
+                    torch_rand_float(
+                        comz_displacement[0],
+                        comz_displacement[1],
+                        (len(env_ids), 1),
+                        device=self.device,
+                    ),
+                ),
+                dim=-1,
+            )
+            props[0].com += gymapi.Vec3(
+                self.com_displacements[env_id, 0],
+                self.com_displacements[env_id, 1],
+                self.com_displacements[env_id, 2],
+            )
         return props
 
     def _post_physics_step_callback(self):

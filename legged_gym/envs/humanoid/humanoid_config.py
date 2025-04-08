@@ -36,8 +36,8 @@ class HumanoidRobotCfg(LeggedRobotCfg):
         fix_base_link = False
 
     class terrain(LeggedRobotCfg.terrain):
-        mesh_type = "plane"
-        # mesh_type = 'trimesh'
+        # mesh_type = "plane"
+        mesh_type = "trimesh"
         curriculum = False
         # rough terrain only:
         measure_heights = False
@@ -201,8 +201,95 @@ class HumanoidRobotCfg(LeggedRobotCfg):
     class domain_rand:
         randomize_friction = True
         friction_range = [0.1, 2.0]
+
         randomize_base_mass = True
         added_mass_range = [-5.0, 5.0]
+
+        randomize_com = True
+        com_displacement_range = [[-0.03, 0.03], [-0.03, 0.03], [-0.03, 0.03]]
+
+        randomize_gains = False
+        stiffness_multiplier_range = [0.8, 1.2]  # Factor
+        damping_multiplier_range = [0.8, 1.2]  # Factor
+
+        randomize_torque = False
+        torque_multiplier_range = [0.8, 1.2]
+
+        randomize_link_mass = False
+        added_link_mass_range = [0.9, 1.1]
+
+        randomize_motor_offset = False
+        motor_offset_range = [-0.035, 0.035]  # Offset to add to the motor angles
+
+        randomize_joint_friction = False
+        randomize_joint_friction_each_joint = False
+        joint_friction_range = [0.01, 1.15]
+        joint_1_friction_range = [0.01, 1.15]
+        joint_2_friction_range = [0.01, 1.15]
+        joint_3_friction_range = [0.01, 1.15]
+        joint_4_friction_range = [0.5, 1.3]
+        joint_5_friction_range = [0.5, 1.3]
+        joint_6_friction_range = [0.01, 1.15]
+        joint_7_friction_range = [0.01, 1.15]
+        joint_8_friction_range = [0.01, 1.15]
+        joint_9_friction_range = [0.5, 1.3]
+        joint_10_friction_range = [0.5, 1.3]
+
+        randomize_joint_damping = False
+        randomize_joint_damping_each_joint = False
+        joint_damping_range = [0.3, 1.5]
+        joint_1_damping_range = [0.3, 1.5]
+        joint_2_damping_range = [0.3, 1.5]
+        joint_3_damping_range = [0.3, 1.5]
+        joint_4_damping_range = [0.9, 1.5]
+        joint_5_damping_range = [0.9, 1.5]
+        joint_6_damping_range = [0.3, 1.5]
+        joint_7_damping_range = [0.3, 1.5]
+        joint_8_damping_range = [0.3, 1.5]
+        joint_9_damping_range = [0.9, 1.5]
+        joint_10_damping_range = [0.9, 1.5]
+
+        randomize_joint_armature = False
+        randomize_joint_armature_each_joint = False
+        joint_armature_range = [0.0001, 0.05]  # Factor
+        joint_1_armature_range = [0.0001, 0.05]
+        joint_2_armature_range = [0.0001, 0.05]
+        joint_3_armature_range = [0.0001, 0.05]
+        joint_4_armature_range = [0.0001, 0.05]
+        joint_5_armature_range = [0.0001, 0.05]
+        joint_6_armature_range = [0.0001, 0.05]
+        joint_7_armature_range = [0.0001, 0.05]
+        joint_8_armature_range = [0.0001, 0.05]
+        joint_9_armature_range = [0.0001, 0.05]
+        joint_10_armature_range = [0.0001, 0.05]
+
+        add_lag = False
+        randomize_lag_timesteps = False
+        randomize_lag_timesteps_perstep = False
+        lag_timesteps_range = [5, 40]
+
+        add_dof_lag = False
+        randomize_dof_lag_timesteps = False
+        randomize_dof_lag_timesteps_perstep = False
+        dof_lag_timesteps_range = [0, 40]
+
+        add_dof_pos_vel_lag = False
+        randomize_dof_pos_lag_timesteps = False
+        randomize_dof_pos_lag_timesteps_perstep = False
+        dof_pos_lag_timesteps_range = [7, 25]
+        randomize_dof_vel_lag_timesteps = False
+        randomize_dof_vel_lag_timesteps_perstep = False
+        dof_vel_lag_timesteps_range = [7, 25]
+
+        add_imu_lag = False
+        randomize_imu_lag_timesteps = False
+        randomize_imu_lag_timesteps_perstep = False
+        imu_lag_timesteps_range = [1, 10]
+
+        randomize_coulomb_friction = False
+        joint_coulomb_range = [0.1, 0.9]
+        joint_viscous_range = [0.05, 0.1]
+
         push_robots = True
         push_interval_s = 4  # 2 # 4
         max_push_vel_xy = 0.2  # 1.0 # 0.2
@@ -223,9 +310,12 @@ class HumanoidRobotCfg(LeggedRobotCfg):
         )
 
         class ranges:
-            lin_vel_x = [-0.3, 0.6]  # min max [m/s]
-            lin_vel_y = [-0.3, 0.3]  # min max [m/s]
-            ang_vel_yaw = [-0.3, 0.3]  # min max [rad/s]
+            # lin_vel_x = [-0.3, 0.6]  # min max [m/s]
+            # lin_vel_y = [-0.3, 0.3]  # min max [m/s]
+            # ang_vel_yaw = [-0.3, 0.3]  # min max [rad/s]
+            lin_vel_x = [-0.8, 0.8]  # min max [m/s]
+            lin_vel_y = [-0.4, 0.4]  # min max [m/s]
+            ang_vel_yaw = [-0.4, 0.4]  # min max [rad/s]
             heading = [-3.14, 3.14]
 
     class rewards:
@@ -236,17 +326,18 @@ class HumanoidRobotCfg(LeggedRobotCfg):
         # target_joint_pos_scale = 0.17    # rad
         target_joint_pos_scale = 0.32  # 0.32    # rad
         target_feet_height = 0.09  # 0.075  # 0.06        # m
-        cycle_time = 0.80  # 0.80  # 0.64  # sec
+        cycle_time = 0.64  # 0.80  # 0.64  # sec
         # if true negative total rewards are clipped at zero (avoids early termination problems)
         only_positive_rewards = True  # True
         # tracking reward = exp(error*sigma)
         tracking_sigma = 5  # 5
         max_contact_force = 800  # 700  # Forces above this value are penalized
+        trajectory_type = "sin2"  # "sin", "sin2", "sin3"
 
         class scales:
             # reference motion tracking
-            joint_pos = 3.6  # 3.6 # 5.6
-            feet_clearance = 0.1  # 0.1 # 2.
+            joint_pos = 5.6  # 3.6 # 5.6
+            feet_clearance = 1.0  # 0.1 # 2.
             feet_contact_number = 1.2
             # gait
             feet_air_time = 2.0  # 1.0
@@ -267,13 +358,14 @@ class HumanoidRobotCfg(LeggedRobotCfg):
             base_height = 0.3  # 0.2
             base_acc = 0.2
             # energy
-            action_smoothness = -1.0  # -4.0 # -1.0 # -0.2 # -0.002
+            action_smoothness = -0.002  # -4.0 # -1.0 # -0.2 # -0.002
             torques = -1e-5
-            dof_vel = -1e-3  # -1e-3  # -5e-4
-            dof_acc = -5e-6  # -5e-6 # -1e-6  # -1e-7
-
-            action_rate = -1.0  # -8.0 # 1.0 # -0.2 # -0.0
+            dof_vel = -5e-4  # -1e-3  # -5e-4
+            dof_acc = -1e-7  # -5e-6 # -1e-6  # -1e-7
             collision = -1.0
+
+            action_rate = -0.0  # -8.0 # 1.0 # -0.2 # -0.0
+            ankle_torques = -5e-5  # -5e-5
 
     class normalization:
         class obs_scales:
